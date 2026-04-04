@@ -1,8 +1,9 @@
-// Firebase読み込み
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
+console.log("JS読み込まれてる");
 
-// ←ここに自分のfirebaseConfig貼る
+// Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyCr0Aw3yX6INXqC15gyG52KtzbyA9sBk_o",
   authDomain: "utakaze-sheet.firebaseapp.com",
@@ -14,9 +15,65 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const db = getFirestore(app);
 
-// 保存処理
+// -----------------------------
+// UI生成（これが足りなかった）
+// -----------------------------
+window.onload = () => {
+
+  // 能力値
+  for (let i = 0; i <= 6; i++) {
+    ["yuki","chie","aijo"].forEach(id => {
+      let opt = document.createElement("option");
+      opt.value = i;
+      opt.text = i;
+      document.getElementById(id).appendChild(opt);
+    });
+  }
+
+  // 龍ダイス
+  for (let i = 1; i <= 6; i++) {
+    let opt = document.createElement("option");
+    opt.value = i;
+    opt.text = i;
+    document.getElementById("dragon").appendChild(opt);
+  }
+};
+
+// リュック追加
+window.addItem = function () {
+  let input = document.createElement("input");
+  input.placeholder = "持ち物";
+  input.classList.add("item");
+  document.getElementById("items").appendChild(input);
+};
+
+// バリデーション
+function validate() {
+  let y = +yuki.value;
+  let c = +chie.value;
+  let a = +aijo.value;
+
+  if (y + c + a > 10) {
+    alert("能力値の合計は10以下！");
+    return false;
+  }
+
+  let skills = document.querySelectorAll(".skill");
+  let total = 0;
+
+  skills.forEach(s => total += +s.value || 0);
+
+  if (total > 3) {
+    alert("技能値は合計3まで！");
+    return false;
+  }
+
+  return true;
+}
+
+// 保存
 window.saveCharacter = async function () {
 
   if (!validate()) return;
