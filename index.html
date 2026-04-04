@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ウタカゼ キャラシート</title>
+</head>
+<body>
+
+<h1>キャラクター作成</h1>
+
+<h2>基本情報</h2>
+<input id="name" placeholder="キャラクター名"><br>
+<input id="head" placeholder="頭の装飾"><br>
+<input id="cloth" placeholder="服の装飾"><br>
+<input id="hair" placeholder="髪の色"><br>
+<input id="eye" placeholder="瞳の色"><br>
+<input id="skin" placeholder="肌の色"><br>
+<input id="range" placeholder="飛び道具名"><br>
+<input id="melee" placeholder="近接武器名"><br>
+<input id="instrument" placeholder="楽器名"><br>
+
+<h2>ステータス</h2>
+<input id="hp" type="number" placeholder="希望（HP）"><br>
+
+<h3>能力値</h3>
+勇気:
+<select id="yuki"></select>
+知恵:
+<select id="chie"></select>
+愛情:
+<select id="aijo"></select>
+
+<h3>技能値（合計3）</h3>
+
+<div>
+勇気系<br>
+戦い <input class="skill" id="tatakai" type="number" min="0" max="3"><br>
+冒険 <input class="skill" id="bouken" type="number"><br>
+騎乗 <input class="skill" id="kijou" type="number"><br>
+</div>
+
+<div>
+知恵系<br>
+狩り <input class="skill" id="kari" type="number"><br>
+感覚 <input class="skill" id="kankaku" type="number"><br>
+学問 <input class="skill" id="gakumon" type="number"><br>
+</div>
+
+<div>
+愛情系<br>
+歌 <input class="skill" id="uta" type="number"><br>
+説得 <input class="skill" id="settoku" type="number"><br>
+心話 <input class="skill" id="shinwa" type="number"><br>
+</div>
+
+<h3>龍のダイス</h3>
+<select id="dragon"></select>
+
+<h3>リュックサック</h3>
+<div id="items"></div>
+<button onclick="addItem()">追加</button>
+
+<br><br>
+<button onclick="saveCharacter()">保存</button>
+
+<script src="app.js"></script>
+</body>
+</html>
