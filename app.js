@@ -1,58 +1,19 @@
-// プルダウン生成
-for (let i = 0; i <= 6; i++) {
-  ["yuki","chie","aijo"].forEach(id => {
-    let opt = document.createElement("option");
-    opt.value = i;
-    opt.text = i;
-    document.getElementById(id).appendChild(opt);
-  });
-}
+// Firebase読み込み
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 龍ダイス
-for (let i = 1; i <= 6; i++) {
-  let opt = document.createElement("option");
-  opt.value = i;
-  opt.text = i;
-  document.getElementById("dragon").appendChild(opt);
-}
+// ←ここに自分のfirebaseConfig貼る
+const firebaseConfig = {
+  apiKey: "ここを貼る",
+  authDomain: "ここを貼る",
+  projectId: "ここを貼る",
+};
 
-// リュック追加
-function addItem() {
-  let input = document.createElement("input");
-  input.placeholder = "持ち物";
-  input.classList.add("item");
-  document.getElementById("items").appendChild(input);
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-// バリデーション
-function validate() {
-  let y = +yuki.value;
-  let c = +chie.value;
-  let a = +aijo.value;
-
-  if (y + c + a > 10) {
-    alert("能力値の合計は10以下！");
-    return false;
-  }
-
-  // 技能チェック
-  let skills = document.querySelectorAll(".skill");
-  let total = 0;
-
-  skills.forEach(s => {
-    total += +s.value || 0;
-  });
-
-  if (total > 3) {
-    alert("技能値は合計3まで！");
-    return false;
-  }
-
-  return true;
-}
-
-// 保存処理（Firebaseは後で合体）
-async function saveCharacter() {
+// 保存処理
+window.saveCharacter = async function () {
 
   if (!validate()) return;
 
@@ -92,9 +53,15 @@ async function saveCharacter() {
     },
 
     dragon: +dragon.value,
-    items: items
+    items: items,
+    createdAt: new Date()
   };
 
-  console.log(data);
-  alert("保存OK（まだFirestore未接続）");
-}
+  try {
+    await addDoc(collection(db, "characters"), data);
+    alert("🔥 Firebaseに保存成功！");
+  } catch (e) {
+    console.error(e);
+    alert("エラー：" + e.message);
+  }
+};
