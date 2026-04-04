@@ -7,10 +7,14 @@ const firebaseConfig = {
   apiKey: "AIzaSyCr0Aw3yX6INXqC15gyG52KtzbyA9sBk_o",
   authDomain: "utakaze-sheet.firebaseapp.com",
   projectId: "utakaze-sheet",
+  storageBucket: "utakaze-sheet.firebasestorage.app",
+  messagingSenderId: "708154707581",
+  appId: "1:708154707581:web:c5c8928d741ed1c3202b14",
+  measurementId: "G-QMQ4F1JT3C"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const analytics = getAnalytics(app);
 
 // 保存処理
 window.saveCharacter = async function () {
