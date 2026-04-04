@@ -4,9 +4,9 @@ import { getFirestore, collection, addDoc } from "https://www.gstatic.com/fireba
 
 // ←ここに自分のfirebaseConfig貼る
 const firebaseConfig = {
-  apiKey: "ここを貼る",
-  authDomain: "ここを貼る",
-  projectId: "ここを貼る",
+  apiKey: "AIzaSyCr0Aw3yX6INXqC15gyG52KtzbyA9sBk_o",
+  authDomain: "utakaze-sheet.firebaseapp.com",
+  projectId: "utakaze-sheet",
 };
 
 const app = initializeApp(firebaseConfig);
