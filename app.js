@@ -115,6 +115,21 @@ window.deleteCharacter = async function(id) {
   loadCharacters();
 };
 
+// =====================
+// (タブ切り替え)
+// =====================
+
+window.showTab = function(tabId) {
+
+  // 全部非表示
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.style.display = "none";
+  });
+
+  // 指定だけ表示
+  document.getElementById(tabId).style.display = "block";
+};
+
 // ========================
 // UI生成
 // ========================
@@ -193,6 +208,8 @@ window.saveCharacter = async function () {
 
     userId: currentUser.uid
   };
+
+
 
   try {
     if (editingId) {
