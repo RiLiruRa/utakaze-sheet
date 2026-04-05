@@ -2,8 +2,15 @@ console.log("JS読み込まれてる");
 
 // Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { 
+  getFirestore, collection, addDoc, getDocs, query, where,
+  deleteDoc, doc, updateDoc 
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
+// ========================
+// Firebase初期化
+// ========================
 const firebaseConfig = {
   apiKey: "AIzaSyCr0Aw3yX6INXqC15gyG52KtzbyA9sBk_o",
   authDomain: "utakaze-sheet.firebaseapp.com",
@@ -16,13 +23,103 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-// -----------------------------
-// UI生成（これが足りなかった）
-// -----------------------------
+// ========================
+// ログイン
+// ========================
+let currentUser = null;
+let editingId = null; // ←編集用
+
+signInAnonymously(auth).then((userCredential) => {
+  currentUser = userCredential.user;
+  loadCharacters();
+});
+
+// ========================
+// 一覧表示
+// ========================
+async function loadCharacters() {
+  if (!currentUser) return;
+
+  const q = query(
+    collection(db, "characters"),
+    where("userId", "==", currentUser.uid)
+  );
+
+  const querySnapshot = await getDocs(q);
+  const list = document.getElementById("characterList");
+  list.innerHTML = "";
+
+  querySnapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const id = docSnap.id;
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <h2>${data.name}</h2>
+      ❤️ HP: ${data.hp}<br>
+      ⚔ ${data.melee}<br>
+
+      <button onclick="editCharacter('${id}')">✏️ 編集</button>
+      <button onclick="deleteCharacter('${id}')">🗑️ 削除</button>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+// ========================
+// 編集（読み込み）
+// ========================
+window.editCharacter = async function(id) {
+
+  const q = query(
+    collection(db, "characters"),
+    where("userId", "==", currentUser.uid)
+  );
+
+  const snap = await getDocs(q);
+
+  snap.forEach((docSnap) => {
+    if (docSnap.id === id) {
+      const data = docSnap.data();
+
+      // フォームにセット
+      document.getElementById("name").value = data.name;
+      document.getElementById("hp").value = data.hp;
+      document.getElementById("melee").value = data.melee;
+      document.getElementById("range").value = data.range;
+
+      document.getElementById("yuki").value = data.ability.yuki;
+      document.getElementById("chie").value = data.ability.chie;
+      document.getElementById("aijo").value = data.ability.aijo;
+
+      editingId = id;
+
+      alert("編集モード！");
+    }
+  });
+};
+
+// ========================
+// 削除
+// ========================
+window.deleteCharacter = async function(id) {
+
+  if (!confirm("削除する？")) return;
+
+  await deleteDoc(doc(db, "characters", id));
+  loadCharacters();
+};
+
+// ========================
+// UI生成
+// ========================
 window.onload = () => {
 
-  // 能力値
   for (let i = 0; i <= 6; i++) {
     ["yuki","chie","aijo"].forEach(id => {
       let opt = document.createElement("option");
@@ -32,7 +129,6 @@ window.onload = () => {
     });
   }
 
-  // 龍ダイス
   for (let i = 1; i <= 6; i++) {
     let opt = document.createElement("option");
     opt.value = i;
@@ -41,7 +137,9 @@ window.onload = () => {
   }
 };
 
+// ========================
 // リュック追加
+// ========================
 window.addItem = function () {
   let input = document.createElement("input");
   input.placeholder = "持ち物";
@@ -49,21 +147,21 @@ window.addItem = function () {
   document.getElementById("items").appendChild(input);
 };
 
+// ========================
 // バリデーション
+// ========================
 function validate() {
-  let y = +yuki.value;
-  let c = +chie.value;
-  let a = +aijo.value;
+  let y = +document.getElementById("yuki").value;
+  let c = +document.getElementById("chie").value;
+  let a = +document.getElementById("aijo").value;
 
   if (y + c + a > 10) {
     alert("能力値の合計は10以下！");
     return false;
   }
 
-  let skills = document.querySelectorAll(".skill");
   let total = 0;
-
-  skills.forEach(s => total += +s.value || 0);
+  document.querySelectorAll(".skill").forEach(s => total += +s.value || 0);
 
   if (total > 3) {
     alert("技能値は合計3まで！");
@@ -73,56 +171,44 @@ function validate() {
   return true;
 }
 
-// 保存
+
+// ========================
+// 保存（新規 or 編集）
+// ========================
 window.saveCharacter = async function () {
 
-  if (!validate()) return;
-
-  let items = [];
-  document.querySelectorAll(".item").forEach(i => {
-    if (i.value) items.push(i.value);
-  });
+  if (!currentUser) return;
 
   let data = {
-    name: name.value,
-    head: head.value,
-    cloth: cloth.value,
-    hair: hair.value,
-    eye: eye.value,
-    skin: skin.value,
-    range: range.value,
-    melee: melee.value,
-    instrument: instrument.value,
-    hp: +hp.value,
+    name: document.getElementById("name").value,
+    hp: +document.getElementById("hp").value,
+    melee: document.getElementById("melee").value,
+    range: document.getElementById("range").value,
 
     ability: {
-      yuki: +yuki.value,
-      chie: +chie.value,
-      aijo: +aijo.value,
+      yuki: +document.getElementById("yuki").value,
+      chie: +document.getElementById("chie").value,
+      aijo: +document.getElementById("aijo").value,
     },
 
-    skills: {
-      tatakai: +tatakai.value || 0,
-      bouken: +bouken.value || 0,
-      kijou: +kijou.value || 0,
-      kari: +kari.value || 0,
-      kankaku: +kankaku.value || 0,
-      gakumon: +gakumon.value || 0,
-      uta: +uta.value || 0,
-      settoku: +settoku.value || 0,
-      shinwa: +shinwa.value || 0,
-    },
-
-    dragon: +dragon.value,
-    items: items,
-    createdAt: new Date()
+    userId: currentUser.uid
   };
 
   try {
-    await addDoc(collection(db, "characters"), data);
-    alert("🔥 Firebaseに保存成功！");
+    if (editingId) {
+      // ✏️ 更新
+      await updateDoc(doc(db, "characters", editingId), data);
+      alert("更新した！");
+      editingId = null;
+    } else {
+      // 🆕 新規
+      await addDoc(collection(db, "characters"), data);
+      alert("保存した！");
+    }
+
+    loadCharacters();
+
   } catch (e) {
     console.error(e);
-    alert("エラー：" + e.message);
   }
 };

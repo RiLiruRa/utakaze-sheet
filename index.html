@@ -1,6 +1,78 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <style>
+body {
+  background: #1a1a1a;
+  color: white;
+  font-family: sans-serif;
+}
+
+#characterList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.card {
+  background: #2c2c2c;
+  border-radius: 12px;
+  width: 260px;
+  padding: 15px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.6);
+  transition: 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 0 20px #4caf50;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.section {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  margin: 2px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: #444;
+}
+
+.ability {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+
+.bar {
+  height: 6px;
+  background: #555;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 3px;
+}
+
+.fill {
+  height: 100%;
+  background: #4caf50;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+</style>
 <meta charset="UTF-8">
 <title>ウタカゼ キャラシート</title>
 </head>
@@ -62,6 +134,9 @@
 
 <br><br>
 <button onclick="saveCharacter()">保存</button>
+
+<h2>キャラクター一覧</h2>
+<div id="characterList"></div>
 
 <script type="module" src="app.js"></script>
 </body>
