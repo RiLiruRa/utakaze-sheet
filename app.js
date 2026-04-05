@@ -119,17 +119,39 @@ window.deleteCharacter = async function(id) {
 // (タブ切り替え)
 // =====================
 
-window.showTab = function(tabId) {
+window.toggleSection = function(header) {
 
-  // 全部非表示
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.style.display = "none";
-  });
+  const content = header.nextElementSibling;
 
-  // 指定だけ表示
-  document.getElementById(tabId).style.display = "block";
+  //開閉
+  if(content.style.display === "block"){
+    content.style.display = "none";
+  }else{
+    content.style.display = "block";
+  }
 };
 
+
+document.querySelectorAll(".tabBtn").forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    const tabId = btn.dataset.tab;
+
+    // タブ中身切り替え
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.style.display = "none";
+    });
+
+    document.getElementById(tabId).style.display = "block";
+
+    // 🔥 ボタンのアクティブ状態更新
+    document.querySelectorAll(".tabBtn").forEach(b => {
+      b.classList.remove("active");
+    });
+
+    btn.classList.add("active");
+  });
+});
 // ========================
 // UI生成
 // ========================

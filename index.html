@@ -73,22 +73,28 @@ button:hover {
   opacity: 0.8;
 }
 
-.tabs {
-  margin-bottom: 10px;
+.accordion .section {
+    border: 1px solid #444;
+    margin-bottom: 8px;
+    border-radius: 5px;
+    overflow: hidden;
 }
 
-.tabs button {
-  padding: 10px;
-  margin-right: 5px;
-  border: none;
-  background: #444;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
+.header{
+    background: #333;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
 }
 
-.tabs button:hover {
-  background: #666;
+.header:hover{
+    background: #555;
+}
+
+.content{
+    display: none;
+    padding: 10px;
+    background: #222;
 }
 
 .tab {
@@ -103,58 +109,61 @@ button:hover {
 </head>
 <body>
 
-<h1>キャラクター作成</h1>
+<h1>ウタカゼ　キャラクター作成</h1>
 
-<!-- タブ -->
-<div class="tabs">
-  <button onclick="showTab('basic')">基本</button>
-  <button onclick="showTab('status')">能力</button>
-  <button onclick="showTab('skills')">技能</button>
-  <button onclick="showTab('items')">持ち物</button>
-</div>
-
-<!-- 基本 -->
-<div id="basic" class="tab">
-  <input id="name" placeholder="キャラクター名"><br>
-  <input id="head" placeholder="頭の装飾"><br>
-  <input id="cloth" placeholder="服の装飾"><br>
-  <input id="hair" placeholder="髪の色"><br>
-  <input id="eye" placeholder="瞳の色"><br>
-  <input id="skin" placeholder="肌の色"><br>
-  <input id="range" placeholder="飛び道具名"><br>
-  <input id="melee" placeholder="近接武器名"><br>
-  <input id="instrument" placeholder="楽器名"><br>
-</div>
+<!-- 基本情報 -->
+<div class="accordion">
+    <div class="section">
+        <div class="header" onclick="toggleSection(this)">基本情報 ▼</div>
+        <div class="content">
+            <input id="name" placeholder="キャラクター名"><br>
+            <input id="head" placeholder="頭の装飾"><br>
+            <input id="cloth" placeholder="服の装飾"><br>
+            <input id="hair" placeholder="髪の色"><br>
+            <input id="eye" placeholder="瞳の色"><br>
+            <input id="skin" placeholder="肌の色"><br>
+            <input id="range" placeholder="飛び道具名"><br>
+            <input id="melee" placeholder="近接武器名"><br>
+            <input id="instrument" placeholder="楽器名"><br>
+        </div>
+    </div>
 
 <!-- 能力 -->
-<div id="status" class="tab" style="display:none;">
-  <input id="hp" type="number" placeholder="HP"><br>
-
-  勇気:<select id="yuki"></select>
-  知恵:<select id="chie"></select>
-  愛情:<select id="aijo"></select>
-
-  龍ダイス:<select id="dragon"></select>
-</div>
+ <div class="section">
+    <div class="header" onclick="toggleSection(this)">能力 ▼</div>
+    <div class="content">
+        HP<input id="hp" type="number" placeholder="HP"><br>
+        勇気:<select id="yuki"></select>
+        知恵:<select id="chie"></select>
+        愛情:<select id="aijo"></select>
+        龍ダイス:<select id="dragon"></select>
+        </div>
+    </div>
 
 <!-- 技能 -->
-<div id="skills" class="tab" style="display:none;">
-  戦い <input class="skill" id="tatakai"><br>
-  冒険 <input class="skill" id="bouken"><br>
-  騎乗 <input class="skill" id="kijou"><br>
-  狩り <input class="skill" id="kari"><br>
-  感覚 <input class="skill" id="kankaku"><br>
-  学問 <input class="skill" id="gakumon"><br>
-  歌 <input class="skill" id="uta"><br>
-  説得 <input class="skill" id="settoku"><br>
-  心話 <input class="skill" id="shinwa"><br>
-</div>
+ <div class="section">
+    <div class="header" onclick="toggleSection(this)">技能 ▼</div>
+    <div class="content">
+        戦い <input class="skill" id="tatakai"><br>
+        冒険 <input class="skill" id="bouken"><br>
+        騎乗 <input class="skill" id="kijou"><br>
+        狩り <input class="skill" id="kari"><br>
+        感覚 <input class="skill" id="kankaku"><br>
+        学問 <input class="skill" id="gakumon"><br>
+        歌 <input class="skill" id="uta"><br>
+        説得 <input class="skill" id="settoku"><br>
+        心話 <input class="skill" id="shinwa"><br>
+    </div>
+ </div>
 
 <!-- 持ち物 -->
-<div id="itemsTab" class="tab" style="display:none;">
-  <div id="items"></div>
-  <button onclick="addItem()">追加</button>
-</div>
+ <div class="section">
+    <div class="header" onclick="toggleSection(this)">持ち物 ▼</div>
+    <div class="content">
+      <div id="items"></div>
+      <button onclick="addItem()">追加</button>
+    </div>
+ </div>
 
 <br>
 <button onclick="saveCharacter()">保存</button>
