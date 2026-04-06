@@ -1,179 +1,221 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ウタカゼ キャラシート作成</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
     <style>
-body {
-  background: #1a1a1a;
-  color: white;
-  font-family: sans-serif;
-}
+        :root {
+            --primary-brown: #5d4037;
+            --leather-brown: #8d6e63;
+            --paper-white: #fffaf0;
+            --forest-green: #689f38;
+            --accent-red: #e57373;
+        }
 
-#characterList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-}
+        body {
+            background-color: #fdf5e6;
+            background-image: radial-gradient(#eddec1 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--primary-brown);
+            font-family: 'Zen Maru Gothic', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
 
-.card {
-  background: #2c2c2c;
-  border-radius: 12px;
-  width: 260px;
-  padding: 15px;
-  box-shadow: 0 0 12px rgba(0,0,0,0.6);
-  transition: 0.2s;
-}
+        h1 {
+            border-bottom: 3px double var(--leather-brown);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 0 white;
+        }
 
-.card:hover {
-  box-shadow: 0 0 20px #4caf50;
-}
+        /* メインコンテナ */
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
 
-.card h2 {
-  margin: 0;
-  font-size: 20px;
-}
+        /* アコーディオン設定 */
+        .section {
+            background: var(--paper-white);
+            border: 2px solid #d7ccc8;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
 
-.section {
-  margin-top: 10px;
-  font-size: 14px;
-}
+        .header {
+            background: var(--leather-brown);
+            color: white;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            transition: background 0.2s;
+        }
 
-.tag {
-  display: inline-block;
-  padding: 3px 8px;
-  margin: 2px;
-  border-radius: 6px;
-  font-size: 12px;
-  background: #444;
-}
+        .header:hover { background: var(--primary-brown); }
 
-.ability {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 5px;
-}
+        .content {
+            display: none; /* JSで制御 */
+            padding: 20px;
+            background: var(--paper-white);
+        }
 
-.bar {
-  height: 6px;
-  background: #555;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-top: 3px;
-}
+        /* 入力要素の装飾 */
+        .input-group { margin-bottom: 10px; }
+        label { font-size: 0.9rem; font-weight: bold; display: block; margin-bottom: 4px; }
+        
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #bcaaa4;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
 
-.fill {
-  height: 100%;
-  background: #4caf50;
-}
+        input[type="number"] { width: 80px; }
+        .skill-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .skill-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #d7ccc8; padding: 4px 0; }
 
-button {
-  cursor: pointer;
-  
-}
+        /* ボタンデザイン */
+        .btn-area { margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        
+        button {
+            background: var(--forest-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #33691e;
+            font-family: inherit;
+        }
 
-button:hover {
-  opacity: 0.8;
-}
+        button:active { transform: translateY(3px); box-shadow: none; }
+        
+        .btn-ccf { background: #546e7a; box-shadow: 0 4px 0 #263238; }
 
-.accordion .section {
-    border: 1px solid #444;
-    margin-bottom: 8px;
-    border-radius: 5px;
-    overflow: hidden;
-}
+        /* キャラクターカード一覧 */
+        #characterList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
 
-.header{
-    background: #333;
-    color: white;
-    padding: 10px;
-    cursor: pointer;
-}
+        .card {
+            background: var(--paper-white);
+            border: 2px solid var(--leather-brown);
+            border-radius: 12px;
+            width: 260px;
+            padding: 15px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.1);
+        }
 
-.header:hover{
-    background: #555;
-}
+        .card h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: var(--primary-brown); border-bottom: 1px solid #d7ccc8; }
 
-.content{
-    display: none;
-    padding: 10px;
-    background: #222;
-}
-
-.tab {
-  padding: 10px;
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
-}
-
-</style>
-<meta charset="UTF-8">
-<title>ウタカゼ キャラシート</title>
+        /* ココフォリア出力エリア */
+        #ccfOutput {
+            margin-top: 15px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #bcaaa4;
+            padding: 10px;
+            background: #f8f8f8;
+            font-family: monospace;
+        }
+    </style>
 </head>
 <body>
 
-<h1>ウタカゼ　キャラクター作成</h1>
+    <h1>🍃 ウタカゼ 勇者の記録帳</h1>
 
-<!-- 基本情報 -->
-<div class="accordion">
-    <div class="section">
-        <div class="header" onclick="toggleSection(this)">基本情報 ▼</div>
-        <div class="content">
-            <input id="name" placeholder="キャラクター名"><br>
-            <input id="head" placeholder="頭の装飾"><br>
-            <input id="cloth" placeholder="服の装飾"><br>
-            <input id="hair" placeholder="髪の色"><br>
-            <input id="eye" placeholder="瞳の色"><br>
-            <input id="skin" placeholder="肌の色"><br>
-            <input id="range" placeholder="飛び道具名"><br>
-            <input id="melee" placeholder="近接武器名"><br>
-            <input id="instrument" placeholder="楽器名"><br>
+    <div class="container">
+        <div class="section">
+            <div class="header" onclick="toggleSection(this)">基本情報 <span>▼</span></div>
+            <div class="content">
+                <div class="input-group"><label>名まえ</label><input id="name" placeholder="勇者の名前"></div>
+                <div class="input-group"><label>頭の装飾</label><input id="head"></div>
+                <div class="input-group"><label>服の装飾</label><input id="cloth"></div>
+                <div class="input-group"><label>髪の色</label><input id="hair"></div>
+                <div class="input-group"><label>瞳の色</label><input id="eye"></div>
+                <div class="input-group"><label>肌の色</label><input id="skin"></div>
+                <hr>
+                <div class="input-group"><label>飛び道具名</label><input id="range"></div>
+                <div class="input-group"><label>近接武器名</label><input id="melee"></div>
+                <div class="input-group"><label>楽器名</label><input id="instrument"></div>
+            </div>
         </div>
-    </div>
 
-<!-- 能力 -->
- <div class="section">
-    <div class="header" onclick="toggleSection(this)">能力 ▼</div>
-    <div class="content">
-        HP<input id="hp" type="number" placeholder="HP"><br>
-        勇気:<select id="yuki"></select>
-        知恵:<select id="chie"></select>
-        愛情:<select id="aijo"></select>
-        龍ダイス:<select id="dragon"></select>
+        <div class="section">
+            <div class="header" onclick="toggleSection(this)">能力値 <span>▼</span></div>
+            <div class="content">
+                <div class="input-group"><label>希望 (HP)</label><input id="hp" type="number" value="10"></div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <div>勇気 <select id="yuki"></select></div>
+                    <div>知恵 <select id="chie"></select></div>
+                    <div>愛情 <select id="aijo"></select></div>
+                    <div>龍ダイス <select id="dragon"></select></div>
+                </div>
+            </div>
         </div>
-    </div>
 
-<!-- 技能 -->
- <div class="section">
-    <div class="header" onclick="toggleSection(this)">技能 ▼</div>
+        <div class="section">
+            <div class="header" onclick="toggleSection(this)">技能 <span>▼</span></div>
+            <div class="content">
+                <div class="skill-list">
+                    <div class="skill-item"><span>戦い</span><input class="skill" id="tatakai" type="number" value="0"></div>
+                    <div class="skill-item"><span>冒険</span><input class="skill" id="bouken" type="number" value="0"></div>
+                    <div class="skill-item"><span>騎乗</span><input class="skill" id="kijou" type="number" value="0"></div>
+                    <div class="skill-item"><span>狩り</span><input class="skill" id="kari" type="number" value="0"></div>
+                    <div class="skill-item"><span>感覚</span><input class="skill" id="kankaku" type="number" value="0"></div>
+                    <div class="skill-item"><span>学問</span><input class="skill" id="gakumon" type="number" value="0"></div>
+                    <div class="skill-item"><span>歌</span><input class="skill" id="uta" type="number" value="0"></div>
+                    <div class="skill-item"><span>説得</span><input class="skill" id="settoku" type="number" value="0"></div>
+                    <div class="skill-item"><span>心話</span><input class="skill" id="shinwa" type="number" value="0"></div>
+                </div>
+            </div>
+        </div>
+
+<div class="section">
+    <div class="header" onclick="toggleSection(this)">持ち物 (リュック) <span>▼</span></div>
     <div class="content">
-        戦い <input class="skill" id="tatakai"><br>
-        冒険 <input class="skill" id="bouken"><br>
-        騎乗 <input class="skill" id="kijou"><br>
-        狩り <input class="skill" id="kari"><br>
-        感覚 <input class="skill" id="kankaku"><br>
-        学問 <input class="skill" id="gakumon"><br>
-        歌 <input class="skill" id="uta"><br>
-        説得 <input class="skill" id="settoku"><br>
-        心話 <input class="skill" id="shinwa"><br>
+        <div id="items"></div>
+        <button onclick="addItem()" style="background:var(--leather-brown); padding: 5px 15px; font-size: 0.8rem; margin-top: 10px;">＋ 道具を追加</button>
     </div>
- </div>
+</div>
 
-<!-- 持ち物 -->
- <div class="section">
-    <div class="header" onclick="toggleSection(this)">持ち物 ▼</div>
-    <div class="content">
-      <div id="items"></div>
-      <button onclick="addItem()">追加</button>
+        <div class="btn-area">
+            <button onclick="saveCharacter()">✨ ギルドに保存</button>
+            <button onclick="exportCCF()" class="btn-ccf">📋 ココフォリア出力</button>
+        </div>
+
+        <textarea id="ccfOutput" rows="5" placeholder="ここにココフォリア用データが出力されます"></textarea>
     </div>
- </div>
 
-<br>
-<button onclick="saveCharacter()">保存</button>
+    <div id="characterList"></div>
 
-<button onclick="exportCCF()">ココフォリア出力</button>
-<textarea id="ccfOutput" rows="10" style="width:100%;"></textarea>
+    <script type="module" src="app.js"></script>
 
-<div id="characterList"></div>
-
-<script type="module" src="app.js"></script>
+    <script>
+        // アコーディオン開閉
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const isOpen = content.style.display === "block";
+            content.style.display = isOpen ? "none" : "block";
+            header.querySelector('span').innerText = isOpen ? "▼" : "▲";
+        }
+    </script>
 </body>
 </html>
