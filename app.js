@@ -73,49 +73,70 @@ async function loadCharacters() {
   }
 }
 
-// --- 編集（復元） ---
+// --- 編集（復元）処理の修正版 ---
 window.editCharacter = async function(id) {
-  const q = query(collection(db, "characters"));
-  const snap = await getDocs(q);
+  try {
+    // 【改善点】全取得ではなく、ドキュメントIDを指定してピンポイントで1件だけ取得する（ルールを確実にクリア）
+    const docRef = doc(db, "characters", id);
+    const docSnap = await getDoc(docRef); // ※上部で getDoc をインポートに足す必要があります（後述）
 
-  snap.forEach((docSnap) => {
-    if (docSnap.id === id) {
+    if (docSnap.exists()) {
       const data = docSnap.data();
-      // 基本フィールドの復元
+
+      // 1. 基本フィールドの復元
       const fields = ["name", "head", "cloth", "hair", "eye", "skin", "range", "melee", "instrument", "hp"];
       fields.forEach(f => {
         const el = document.getElementById(f);
-        if(el) el.value = data[f] || (f === "hp" ? 10 : "");
+        if (el) el.value = data[f] || (f === "hp" ? 10 : "");
       });
 
-      // 能力値の復元
-      document.getElementById("yuki").value = data.ability?.yuki || 0;
-      document.getElementById("chie").value = data.ability?.chie || 0;
-      document.getElementById("aijo").value = data.ability?.aijo || 0;
+      // 2. 能力値の復元
+      if (data.ability) {
+        document.getElementById("yuki").value = data.ability.yuki || 0;
+        document.getElementById("chie").value = data.ability.chie || 0;
+        document.getElementById("aijo").value = data.ability.aijo || 0;
+      }
       document.getElementById("dragon").value = data.dragon || 1;
 
-      // 技能の復元
-      if(data.skills) {
+      // 3. 技能の復元（上限なし対応版）
+      if (data.skills) {
         Object.keys(data.skills).forEach(s => {
           const el = document.getElementById(s);
-          if(el) el.value = data.skills[s] !== undefined ? data.skills[s] : 0;
+          if (el) {
+            el.value = data.skills[s] !== undefined ? data.skills[s] : 0;
+          }
         });
       }
 
-      // 持ち物の復元（一旦リセットしてから追加）
+      // 4. 持ち物の復元（一旦リセットしてから追加）
       const itemContainer = document.getElementById("items");
       itemContainer.innerHTML = "";
-      if(data.items) {
+      if (data.items) {
         data.items.forEach(itemStr => {
           window.addItem(itemStr); 
         });
       }
 
+      // 5. 編集モードの状態を記憶 & 画面の表示を切り替え
       editingId = id;
+      
+      const statusEl = document.getElementById("editStatus");
+      if (statusEl) {
+        statusEl.innerText = `🚨 今は【 ${data.name || "ななし"} の編集モード 】だよ`;
+        statusEl.style.color = "#e57373"; // 文字色を警告色に
+      }
+
+      // フォームのある上部へスムーススクロール
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      alert(data.name + " の記録をひらいたよ！");
+      console.log(data.name + " のデータを復元したよ！");
+
+    } else {
+      alert("指定された勇者の記録が見つからなかったよ…");
     }
-  });
+  } catch (e) {
+    console.error("復元エラー:", e);
+    alert("データの読み込みに失敗したみたい： " + e.message);
+  }
 };
 
 // --- 削除 ---
