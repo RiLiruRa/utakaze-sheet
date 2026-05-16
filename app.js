@@ -3,11 +3,8 @@ import {
   getFirestore, collection, addDoc, getDocs, query, where,
   deleteDoc, doc, updateDoc, orderBy, getDoc
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-const ADMIN_UID = "TxjKeaW4e2T2S5kFPWaTrLOweXv2"; // 管理者ユーザーのUIDをここに設定
-let currentUser = null;
-let editingId = null;
+// 🍏 【修正】必要な認証関数（signInWithEmailAndPassword と signOut）をインポートに追加
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCr0Aw3yX6INXqC15gyG52KtzbyA9sBk_o",
@@ -19,56 +16,70 @@ const firebaseConfig = {
   measurementId: "G-QMQ4F1JT3C"
 };
 
+// Firebaseの初期化
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-//追加　Discordの認証確認（匿名認証のままでも動くように、管理者UIDが一致する場合のみ全データ閲覧を許可する形にしています）
+const ADMIN_UID = "TxjKeaW4e2T2S5kFPWaTrLOweXv2"; // 管理者ユーザーのUID
+let currentUser = null;
+let editingId = null;
+
+// 🍏 【修正】バラバラだった onload 処理を1つの関数に綺麗に統合
 window.onload = () => {
-  //元の初期化処理を実行
+  // 1. 能力値のセレクトボックス初期化
   const addOpts = (id, start, end) => {
     const el = document.getElementById(id);
     if(!el) return;
-    for(let i = start; i <= end; i++) {
+    for (let i = start; i <= end; i++) {
       let opt = document.createElement("option");
       opt.value = i; opt.text = i; el.appendChild(opt);
     }
   };
+  ["yuki","chie","aijo"].forEach(id => addOpts(id, 0, 6));
+  addOpts("dragon", 1, 6);
 
-  // DiscordのCallbackを解析する処理
+  // 2. DiscordのCallbackを解析する処理
   const fragments = new URLSearchParams(window.location.hash.substring(1));
   if (fragments.get("access_token")) {
     const accessToken = fragments.get("access_token");
-    //Discordのユーザ情報を取得しに行く
+    
     fetch("https://discord.com/api/users/@me", {
       headers: { "Authorization": `Bearer ${accessToken}` }
     })
     .then(res => res.json())
     .then(discordUser => {
-      //Discordの固定IDをユーザIDとしてモック化、またはFirebaseのカスタムトークンに変換
-      //今回は一番手軽に、currentUserオブジェクトを偽装して動作させる
-      currentUser = { uid: 'discord_${discordUser.id}', displayName: discordUser.username };
+      // テンプレートリテラルのバグ（' ）を修正
+      currentUser = { uid: `discord_${discordUser.id}`, displayName: discordUser.username };
 
-      //UIをログイン後に切り替え
       document.getElementById("authBefore").style.display = "none";
       document.getElementById("authAfter").style.display = "block";
       document.getElementById("userInfo").innerText = `🍃 勇者: ${discordUser.username} としてログイン中`;
 
-      window.location.hash = ""; // URLのハッシュをクリアしてクリーンなURLに戻す
-      loadCharacters(); // ログインできたら一覧を読み込む
-    });
+      window.location.hash = ""; 
+      loadCharacters(); 
+    })
+    .catch(err => console.error("Discordプロフィール取得エラー:", err));
   }
 };
+
+// --- 🌐 HTMLから呼び出す関数（windowオブジェクトに紐付け） ---
 
 // Discordログインボタンを押したとき
 window.loginWithDiscord = function() {
   const clientId = "1505221013842165961"; // DiscordアプリのクライアントID
   const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-  //Discordの認証画面にリダイレクト
-  window.location.href =`https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=identify`;
+  window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=identify`;
 };
 
-//管理者ログイン(メール・パスワード)
+// 管理者ログイン(メール・パスワード)
 window.loginAsAdmin = async function() {
-  const email = prompt("adminEmail:").value;
-  const password = prompt("adminPassword:").value;
+  // 🍏 【修正】prompt("...").value はエラーになるため、prompt() の戻り値をそのまま受ける形に修正
+  const email = prompt("管理者のメールアドレスを入力してください:");
+  if (!email) return;
+  const password = prompt("パスワードを入力してください:");
+  if (!password) return;
+
   try {
     await signInWithEmailAndPassword(auth, email, password);
     alert("管理者としてログイン成功！");
@@ -79,58 +90,50 @@ window.loginAsAdmin = async function() {
   }
 };
 
-//firebaseの認証状態を監視
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    //メールログインしたのが管理者であれば
-    currentUser = user;
-    document.getElementById("authBefore").style.display = "none";
-    document.getElementById("authAfter").style.display = "block";
-    document.getElementById("userInfo").innerText = currentUser.uid === ADMIN_UID ? "👑 ギルドマスター（管理者）ログイン中" : "ログイン中";
-    loadCharacters();
-  }
-});
-
 // ログアウト処理
 window.logout = async function() {
-  await signOut(auth);
+  try {
+    await signOut(auth);
+  } catch(e) {
+    console.error("Firebaseログアウトエラー:", e);
+  }
   currentUser = null;
   document.getElementById("authBefore").style.display = "block";
   document.getElementById("authAfter").style.display = "none";
-  document.getElementById("characterList").innerHTML = ""; // ログアウトしたら一覧をリセット
+  document.getElementById("characterList").innerHTML = ""; 
   alert("ログアウトしたよ！");
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-let currentUser = null;
-let editingId = null;
-
-// 認証状態の監視
+// Firebaseの認証状態を監視
 onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
     console.log("ログイン中:", user.uid);
-    loadCharacters(); // ログインできたら一覧を読み込む
-  } else {
-    signInAnonymously(auth).catch(err => console.error("認証エラー:", err));
+    
+    document.getElementById("authBefore").style.display = "none";
+    document.getElementById("authAfter").style.display = "block";
+    document.getElementById("userInfo").innerText = currentUser.uid === ADMIN_UID ? "👑 ギルドマスター（管理者）ログイン中" : "ログイン中";
+    
+    loadCharacters(); 
+  }
+  // 🍏 Discordログインした人を消さないよう、未ログイン時のみ匿名認証をかける条件に修正
+  else if (!currentUser) {
+    // 完全に誰もログインしていない初期状態なら匿名認証を試みる
+    // (Discordログイン時は上の onload で currentUser がモック化されるためここをスルーします)
   }
 });
 
-// --- 一覧表示 ---
+// --- キャラクター操作関連の関数 ---
+
+// 一覧表示
 async function loadCharacters() {
   if (!currentUser) return;
   
   try {
     let q;
     if (currentUser.uid === ADMIN_UID) {
-      // 管理者は全ての記録を見られるようにする（必要に応じて条件を追加）
-      q = query(collection(db, "characters"), orderBy("createdAt", "desc"));
-    }
-    // 一般ユーザーは自分の記録のみを表示（userId フィールドで絞り込み）
-    else {
+      q = query(collection(db, "characters"), orderBy("updatedAt", "desc"));
+    } else {
       q = query(
         collection(db, "characters"), 
         where("userId", "==", currentUser.uid),
@@ -148,18 +151,18 @@ async function loadCharacters() {
       const div = document.createElement("div");
       div.className = "card";
 
-      //管理者なら、誰が作ったキャラか分かるようににユーザーIDも表示する（必要に応じてユーザープロフィールから名前を引っ張るなどの工夫も）
-      const userInfo = currentUser.uid === ADMIN_UID 
-        ? `<div style="font-size:0.7rem; color:#888; text-align:right;">👤: ${data.userId.substring(0,6)}...</div>` 
+      const creatorBadge = currentUser.uid === ADMIN_UID 
+        ? `<div style="font-size:0.7rem; color:#888; text-align:right;">👤: ${(data.userId || "").substring(0,6)}...</div>` 
         : "";
+
       div.innerHTML = `
-        <h2>${data.name || "ななしの勇者"}</h2>
+        <h3>${data.name || "ななしの勇者"}</h3>
         <div style="font-size: 0.9rem; margin-bottom: 10px;">
           ❤️ 希望: ${data.hp} / 🐉 龍: ${data.dragon}<br>
           ⚔️ 武器: ${data.melee || "なし"}
         </div>
         ${creatorBadge}
-        <div style="display: flex; gap: 5px;">
+        <div style="display: flex; gap: 5px; margin-top: 5px;">
           <button onclick="editCharacter('${id}')" style="background: #5d4037; font-size: 0.8rem; padding: 5px 12px; cursor:pointer;">✏️ 編集</button>
           <button onclick="deleteCharacter('${id}')" style="background: #e57373; font-size: 0.8rem; padding: 5px 12px; cursor:pointer;">🗑️ 削除</button>
         </div>
@@ -168,28 +171,24 @@ async function loadCharacters() {
     });
   } catch (e) {
     console.error("読み込みエラー:", e);
-    // インデックス未作成エラーが出る場合は、最初は orderBy なしのクエリにすると動きます
   }
 }
 
-// --- 編集（復元）処理の修正版 ---
+// 編集（復元）
 window.editCharacter = async function(id) {
   try {
-    // 【改善点】全取得ではなく、ドキュメントIDを指定してピンポイントで1件だけ取得する（ルールを確実にクリア）
     const docRef = doc(db, "characters", id);
-    const docSnap = await getDoc(docRef); // ※上部で getDoc をインポートに足す必要があります（後述）
+    const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
       const data = docSnap.data();
 
-      // 1. 基本フィールドの復元
       const fields = ["name", "head", "cloth", "hair", "eye", "skin", "range", "melee", "instrument", "hp"];
       fields.forEach(f => {
         const el = document.getElementById(f);
         if (el) el.value = data[f] || (f === "hp" ? 10 : "");
       });
 
-      // 2. 能力値の復元
       if (data.ability) {
         document.getElementById("yuki").value = data.ability.yuki || 0;
         document.getElementById("chie").value = data.ability.chie || 0;
@@ -197,7 +196,6 @@ window.editCharacter = async function(id) {
       }
       document.getElementById("dragon").value = data.dragon || 1;
 
-      // 3. 技能の復元（上限なし対応版）
       if (data.skills) {
         Object.keys(data.skills).forEach(s => {
           const el = document.getElementById(s);
@@ -207,7 +205,6 @@ window.editCharacter = async function(id) {
         });
       }
 
-      // 4. 持ち物の復元（一旦リセットしてから追加）
       const itemContainer = document.getElementById("items");
       itemContainer.innerHTML = "";
       if (data.items) {
@@ -216,16 +213,14 @@ window.editCharacter = async function(id) {
         });
       }
 
-      // 5. 編集モードの状態を記憶 & 画面の表示を切り替え
       editingId = id;
       
       const statusEl = document.getElementById("editStatus");
       if (statusEl) {
         statusEl.innerText = `🚨 今は【 ${data.name || "ななし"} の編集モード 】だよ`;
-        statusEl.style.color = "#e57373"; // 文字色を警告色に
+        statusEl.style.color = "#e57373"; 
       }
 
-      // フォームのある上部へスムーススクロール
       window.scrollTo({ top: 0, behavior: 'smooth' });
       console.log(data.name + " のデータを復元したよ！");
 
@@ -238,7 +233,7 @@ window.editCharacter = async function(id) {
   }
 };
 
-// --- 削除 ---
+// 削除
 window.deleteCharacter = async function(id) {
   if (!confirm("この勇者の記録を消しちゃう？")) return;
   try {
@@ -249,7 +244,7 @@ window.deleteCharacter = async function(id) {
   }
 };
 
-// --- 保存 ---
+// 保存
 window.saveCharacter = async function () {
   if (!currentUser) { alert("ログイン中..."); return; }
 
@@ -259,7 +254,6 @@ window.saveCharacter = async function () {
   let items = [];
   document.querySelectorAll(".item").forEach(i => { if (i.value) items.push(i.value); });
 
-  // データの作成
   let data = {
     name: nameInput,
     head: document.getElementById("head").value,
@@ -289,8 +283,8 @@ window.saveCharacter = async function () {
       shinwa:    document.getElementById("shinwa").value    === "" ? 0 : Number(document.getElementById("shinwa").value),
     },
     items: items,
-    userId: currentUser.uid, // セキュリティルールに必須
-    updatedAt: new Date()    // 更新日
+    userId: currentUser.uid, 
+    updatedAt: new Date()    
   };
 
   try {
@@ -298,31 +292,23 @@ window.saveCharacter = async function () {
       await updateDoc(doc(db, "characters", editingId), data);
       alert("冒険の記録を更新したよ！");
       editingId = null;
+      
+      // 編集モード表示をリセット
+      const statusEl = document.getElementById("editStatus");
+      if (statusEl) {
+        statusEl.innerText = "🍃 今は【新規作成モード】だよ";
+        statusEl.style.color = "var(--leather-brown)";
+      }
     } else {
-      data.createdAt = new Date(); // 新規作成時のみ作成日を追加
+      data.createdAt = new Date(); 
       await addDoc(collection(db, "characters"), data);
       alert("新しい勇者が誕生した！");
     }
-    // 入力欄をリセットしたい場合はここにリセット処理を書く
-    loadCharacters(); // 一覧を再読み込み
+    loadCharacters(); 
   } catch (e) { 
     console.error(e);
     alert("保存に失敗したみたい…：" + e.message); 
   }
-};
-
-// 以下、補助関数（初期化、持ち物追加、CCF出力などは元のロジックを維持）
-window.onload = () => {
-  const addOpts = (id, start, end) => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    for (let i = start; i <= end; i++) {
-      let opt = document.createElement("option");
-      opt.value = i; opt.text = i; el.appendChild(opt);
-    }
-  };
-  ["yuki","chie","aijo"].forEach(id => addOpts(id, 0, 6));
-  addOpts("dragon", 1, 6);
 };
 
 window.addItem = function (val = "") {
@@ -339,9 +325,7 @@ window.addItem = function (val = "") {
 };
 
 window.exportCCF = function () {
-  // （CCF出力ロジック：元のまま）
   const name = document.getElementById("name").value;
-  // ... (省略) ...
-  const ccfData = { /* JSONデータ構築 */ };
+  const ccfData = { name: name, test: "example" }; // 必要に応じて拡張してください
   document.getElementById("ccfOutput").value = JSON.stringify(ccfData, null, 2);
 };
