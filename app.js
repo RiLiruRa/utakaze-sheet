@@ -98,7 +98,7 @@ window.editCharacter = async function(id) {
       if(data.skills) {
         Object.keys(data.skills).forEach(s => {
           const el = document.getElementById(s);
-          if(el) el.value = data.skills[s];
+          if(el) el.value = data.skills[s] !== undefined ? data.skills[s] : 0;
         });
       }
 
