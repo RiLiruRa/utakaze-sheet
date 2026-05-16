@@ -12,6 +12,7 @@
             --paper-white: #fffaf0;
             --forest-green: #689f38;
             --accent-red: #e57373;
+            --accent-blue: #546e7a;
         }
 
         body {
@@ -30,7 +31,7 @@
         h1 {
             border-bottom: 3px double var(--leather-brown);
             padding-bottom: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             text-shadow: 1px 1px 0 white;
         }
 
@@ -38,6 +39,20 @@
         .container {
             width: 100%;
             max-width: 600px;
+        }
+
+        /* 現在のモード表示スタンプ */
+        .status-badge {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--leather-brown);
+            background: #f5eadd;
+            padding: 6px 15px;
+            border-radius: 20px;
+            border: 1px dashed var(--leather-brown);
+            display: inline-block;
         }
 
         /* アコーディオン設定 */
@@ -99,18 +114,34 @@
             cursor: pointer;
             box-shadow: 0 4px 0 #33691e;
             font-family: inherit;
+            transition: all 0.1s;
         }
 
         button:active { transform: translateY(3px); box-shadow: none; }
         
-        .btn-ccf { background: #546e7a; box-shadow: 0 4px 0 #263238; }
+        .btn-ccf { background: var(--accent-blue); box-shadow: 0 4px 0 #263238; }
+
+        /* キャラクター一覧セクション */
+        .guild-board {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 40px;
+            border-top: 2px dashed var(--leather-brown);
+            padding-top: 20px;
+        }
+
+        .guild-board h2 {
+            text-align: center;
+            font-size: 1.4rem;
+            color: var(--primary-brown);
+            margin-bottom: 20px;
+        }
 
         /* キャラクターカード一覧 */
         #characterList {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 15px;
-            margin-top: 30px;
             justify-content: center;
         }
 
@@ -118,12 +149,14 @@
             background: var(--paper-white);
             border: 2px solid var(--leather-brown);
             border-radius: 12px;
-            width: 260px;
             padding: 15px;
-            box-shadow: 4px 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .card h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: var(--primary-brown); border-bottom: 1px solid #d7ccc8; }
+        .card h3 { margin: 0 0 10px 0; font-size: 1.2rem; color: var(--primary-brown); border-bottom: 1px solid #d7ccc8; padding-bottom: 5px; }
 
         /* ココフォリア出力エリア */
         #ccfOutput {
@@ -134,14 +167,19 @@
             padding: 10px;
             background: #f8f8f8;
             font-family: monospace;
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
     <h1>🍃 ウタカゼ 勇者の記録帳</h1>
+    
+    <!-- 現在の編集状態を示すランプ -->
+    <div class="status-badge" id="editStatus">🍃 今は【新規作成モード】だよ</div>
 
     <div class="container">
+        <!-- 基本情報 -->
         <div class="section">
             <div class="header" onclick="toggleSection(this)">基本情報 <span>▼</span></div>
             <div class="content">
@@ -151,26 +189,28 @@
                 <div class="input-group"><label>髪の色</label><input id="hair"></div>
                 <div class="input-group"><label>瞳の色</label><input id="eye"></div>
                 <div class="input-group"><label>肌の色</label><input id="skin"></div>
-                <hr>
+                <hr style="border: 0; border-top: 1px dashed #d7ccc8; margin: 15px 0;">
                 <div class="input-group"><label>飛び道具名</label><input id="range"></div>
                 <div class="input-group"><label>近接武器名</label><input id="melee"></div>
                 <div class="input-group"><label>楽器名</label><input id="instrument"></div>
             </div>
         </div>
 
+        <!-- 能力値 -->
         <div class="section">
             <div class="header" onclick="toggleSection(this)">能力値 <span>▼</span></div>
             <div class="content">
                 <div class="input-group"><label>希望 (HP)</label><input id="hp" type="number" value="10"></div>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <div>勇気 <select id="yuki"></select></div>
-                    <div>知恵 <select id="chie"></select></div>
-                    <div>愛情 <select id="aijo"></select></div>
-                    <div>龍ダイス <select id="dragon"></select></div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+                    <div>勇気 <select id="yuki" style="width: auto;"></select></div>
+                    <div>知恵 <select id="chie" style="width: auto;"></select></div>
+                    <div>愛情 <select id="aijo" style="width: auto;"></select></div>
+                    <div>龍ダイス <select id="dragon" style="width: auto;"></select></div>
                 </div>
             </div>
         </div>
 
+        <!-- 技能 -->
         <div class="section">
             <div class="header" onclick="toggleSection(this)">技能 <span>▼</span></div>
             <div class="content">
@@ -188,14 +228,16 @@
             </div>
         </div>
 
-<div class="section">
-    <div class="header" onclick="toggleSection(this)">持ち物 (リュック) <span>▼</span></div>
-    <div class="content">
-        <div id="items"></div>
-        <button onclick="addItem()" style="background:var(--leather-brown); padding: 5px 15px; font-size: 0.8rem; margin-top: 10px;">＋ 道具を追加</button>
-    </div>
-</div>
+        <!-- 持ち物 -->
+        <div class="section">
+            <div class="header" onclick="toggleSection(this)">持ち物 (リュック) <span>▼</span></div>
+            <div class="content">
+                <div id="items"></div>
+                <button onclick="addItem()" style="background:var(--leather-brown); padding: 5px 15px; font-size: 0.8rem; margin-top: 10px; box-shadow: 0 3px 0 #5d4037;">＋ 道具を追加</button>
+            </div>
+        </div>
 
+        <!-- 操作ボタンエリア -->
         <div class="btn-area">
             <button onclick="saveCharacter()">✨ ギルドに保存</button>
             <button onclick="exportCCF()" class="btn-ccf">📋 ココフォリア出力</button>
@@ -204,12 +246,17 @@
         <textarea id="ccfOutput" rows="5" placeholder="ここにココフォリア用データが出力されます"></textarea>
     </div>
 
-    <div id="characterList"></div>
+    <!-- キャラクター一覧（ギルドの掲示板風） -->
+    <div class="guild-board">
+        <h2>📜 登録された勇者たちの一覧</h2>
+        <div id="characterList"><!-- ここにJSでカードが追加されます --></div>
+    </div>
 
+    <!-- 外部スクリプトの読み込み -->
     <script type="module" src="app.js"></script>
 
     <script>
-        // アコーディオン開閉
+        // アコーディオン開閉用の関数
         function toggleSection(header) {
             const content = header.nextElementSibling;
             const isOpen = content.style.display === "block";
