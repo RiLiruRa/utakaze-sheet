@@ -5,6 +5,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
+const ADMIN_UID = "TxjKeaW4e2T2S5kFPWaTrLOweXv2"; // 管理者ユーザーのUIDをここに設定
+let currentUser = null;
+let editingId = null;
+
 const firebaseConfig = {
   apiKey: "AIzaSyCr0Aw3yX6INXqC15gyG52KtzbyA9sBk_o",
   authDomain: "utakaze-sheet.firebaseapp.com",
@@ -13,6 +17,88 @@ const firebaseConfig = {
   messagingSenderId: "708154707581",
   appId: "1:708154707581:web:c5c8928d741ed1c3202b14",
   measurementId: "G-QMQ4F1JT3C"
+};
+
+
+//追加　Discordの認証確認（匿名認証のままでも動くように、管理者UIDが一致する場合のみ全データ閲覧を許可する形にしています）
+window.onload = () => {
+  //元の初期化処理を実行
+  const addOpts = (id, start, end) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    for(let i = start; i <= end; i++) {
+      let opt = document.createElement("option");
+      opt.value = i; opt.text = i; el.appendChild(opt);
+    }
+  };
+
+  // DiscordのCallbackを解析する処理
+  const fragments = new URLSearchParams(window.location.hash.substring(1));
+  if (fragments.get("access_token")) {
+    const accessToken = fragments.get("access_token");
+    //Discordのユーザ情報を取得しに行く
+    fetch("https://discord.com/api/users/@me", {
+      headers: { "Authorization": `Bearer ${accessToken}` }
+    })
+    .then(res => res.json())
+    .then(discordUser => {
+      //Discordの固定IDをユーザIDとしてモック化、またはFirebaseのカスタムトークンに変換
+      //今回は一番手軽に、currentUserオブジェクトを偽装して動作させる
+      currentUser = { uid: 'discord_${discordUser.id}', displayName: discordUser.username };
+
+      //UIをログイン後に切り替え
+      document.getElementById("authBefore").style.display = "none";
+      document.getElementById("authAfter").style.display = "block";
+      document.getElementById("userInfo").innerText = `🍃 勇者: ${discordUser.username} としてログイン中`;
+
+      window.location.hash = ""; // URLのハッシュをクリアしてクリーンなURLに戻す
+      loadCharacters(); // ログインできたら一覧を読み込む
+    });
+  }
+};
+
+// Discordログインボタンを押したとき
+window.loginWithDiscord = function() {
+  const clientId = "1505221013842165961"; // DiscordアプリのクライアントID
+  const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+  //Discordの認証画面にリダイレクト
+  window.location.href =`https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=identify`;
+};
+
+//管理者ログイン(メール・パスワード)
+window.loginAsAdmin = async function() {
+  const email = prompt("adminEmail:").value;
+  const password = prompt("adminPassword:").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    alert("管理者としてログイン成功！");
+    document.getElementById("adminForm").style.display = "none";
+  } catch (e) {
+    console.error("管理者ログインエラー:", e);
+    alert("ログインに失敗したよ: " + e.message);
+  }
+};
+
+//firebaseの認証状態を監視
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    //メールログインしたのが管理者であれば
+    currentUser = user;
+    document.getElementById("authBefore").style.display = "none";
+    document.getElementById("authAfter").style.display = "block";
+    document.getElementById("userInfo").innerText = currentUser.uid === ADMIN_UID ? "👑 ギルドマスター（管理者）ログイン中" : "ログイン中";
+    loadCharacters();
+  }
+});
+
+// ログアウト処理
+window.logout = async function() {
+  await signOut(auth);
+  currentUser = null;
+  document.getElementById("authBefore").style.display = "block";
+  document.getElementById("authAfter").style.display = "none";
+  document.getElementById("characterList").innerHTML = ""; // ログアウトしたら一覧をリセット
+  alert("ログアウトしたよ！");
 };
 
 const app = initializeApp(firebaseConfig);
@@ -38,12 +124,19 @@ async function loadCharacters() {
   if (!currentUser) return;
   
   try {
-    // ユーザーIDが一致するものを、作成日時順（新しい順）に取得
-    const q = query(
-      collection(db, "characters"), 
-      where("userId", "==", currentUser.uid),
-      orderBy("createdAt", "desc")
-    );
+    let q;
+    if (currentUser.uid === ADMIN_UID) {
+      // 管理者は全ての記録を見られるようにする（必要に応じて条件を追加）
+      q = query(collection(db, "characters"), orderBy("createdAt", "desc"));
+    }
+    // 一般ユーザーは自分の記録のみを表示（userId フィールドで絞り込み）
+    else {
+      q = query(
+        collection(db, "characters"), 
+        where("userId", "==", currentUser.uid),
+        orderBy("updatedAt", "desc")
+      );
+    }
     
     const querySnapshot = await getDocs(q);
     const list = document.getElementById("characterList");
@@ -54,12 +147,18 @@ async function loadCharacters() {
       const id = docSnap.id;
       const div = document.createElement("div");
       div.className = "card";
+
+      //管理者なら、誰が作ったキャラか分かるようににユーザーIDも表示する（必要に応じてユーザープロフィールから名前を引っ張るなどの工夫も）
+      const userInfo = currentUser.uid === ADMIN_UID 
+        ? `<div style="font-size:0.7rem; color:#888; text-align:right;">👤: ${data.userId.substring(0,6)}...</div>` 
+        : "";
       div.innerHTML = `
         <h2>${data.name || "ななしの勇者"}</h2>
         <div style="font-size: 0.9rem; margin-bottom: 10px;">
           ❤️ 希望: ${data.hp} / 🐉 龍: ${data.dragon}<br>
           ⚔️ 武器: ${data.melee || "なし"}
         </div>
+        ${creatorBadge}
         <div style="display: flex; gap: 5px;">
           <button onclick="editCharacter('${id}')" style="background: #5d4037; font-size: 0.8rem; padding: 5px 12px; cursor:pointer;">✏️ 編集</button>
           <button onclick="deleteCharacter('${id}')" style="background: #e57373; font-size: 0.8rem; padding: 5px 12px; cursor:pointer;">🗑️ 削除</button>

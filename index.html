@@ -172,6 +172,33 @@
     </style>
 </head>
 <body>
+    <!-- 🔐 ログインエリア -->
+<div id="loginArea" style="background: #f5eadd; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #d7ccc8; max-width: 600px; width: 100%; box-sizing: border-box;">
+    <!-- ログイン前の表示 -->
+    <div id="authBefore">
+        <p style="margin: 0 0 10px 0; font-weight: bold; text-align: center;">🎲 ギルドにログインして冒険を始めよう</p>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <!-- プレイヤー用 -->
+            <button onclick="loginWithDiscord()" style="background: #5865F2; box-shadow: 0 4px 0 #404eed;">📱 Discordでログイン</button>
+            
+            <!-- 管理者用トグル -->
+            <button onclick="document.getElementById('adminForm').style.display='block'" style="background: var(--leather-brown); font-size: 0.8rem; padding: 5px 12px;">👑 管理者ログイン</button>
+        </div>
+        
+        <!-- 管理者用隠しフォーム -->
+        <div id="adminForm" style="display: none; margin-top: 15px; border-top: 1px dashed #bcaaa4; padding-top: 10px;">
+            <input type="email" id="adminEmail" placeholder="管理者メールアドレス" style="margin-bottom: 5px;">
+            <input type="password" id="adminPassword" placeholder="パスワード" style="margin-bottom: 5px;">
+            <button onclick="loginAsAdmin()" style="width: 100%; padding: 8px;">ログイン</button>
+        </div>
+    </div>
+
+    <!-- ログイン後の表示 -->
+    <div id="authAfter" style="display: none; text-align: center;">
+        <span id="userInfo" style="font-weight: bold;">冒険者としてログイン中</span>
+        <button onclick="logout()" style="background: #e57373; box-shadow: 0 3px 0 #b25151; padding: 4px 12px; font-size: 0.8rem; margin-left: 10px;">ログアウト</button>
+    </div>
+</div>
 
     <h1>🍃 ウタカゼ 勇者の記録帳</h1>
     
