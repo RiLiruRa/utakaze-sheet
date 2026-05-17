@@ -361,22 +361,114 @@ window.addFriendship = function(name = "", value = 0) {
 };
 
 window.exportCCF = function () {
+  // ========================
+  // 1. 入力取得
+  // ========================
   const name = document.getElementById("name").value || "ななしの勇者";
+  const hp = Number(document.getElementById("hp").value) || 0;
 
-  //友情データからココフォリアのstatus形式に変換
-  let statusArray = [];
+  const yuki = Number(document.getElementById("yuki").value) || 0;
+  const chie = Number(document.getElementById("chie").value) || 0;
+  const aijo = Number(document.getElementById("aijo").value) || 0;
+
+  const dragon = document.getElementById("dragon").value || "1";
+
+  const skills = {
+    tatakai: document.getElementById("tatakai").value === "" ? 0 : Number(document.getElementById("tatakai").value),
+    bouken:  document.getElementById("bouken").value === "" ? 0 : Number(document.getElementById("bouken").value),
+    kijou:   document.getElementById("kijou").value === "" ? 0 : Number(document.getElementById("kijou").value),
+    kari:    document.getElementById("kari").value === "" ? 0 : Number(document.getElementById("kari").value),
+    kankaku: document.getElementById("kankaku").value === "" ? 0 : Number(document.getElementById("kankaku").value),
+    gakumon: document.getElementById("gakumon").value === "" ? 0 : Number(document.getElementById("gakumon").value),
+    uta:     document.getElementById("uta").value === "" ? 0 : Number(document.getElementById("uta").value),
+    shinwa:  document.getElementById("shinwa").value === "" ? 0 : Number(document.getElementById("shinwa").value),
+  };
+
+  // ========================
+  // 2. チャットパレット（コマンド）生成
+  // ========================
+  const commands = `
+{＊勇気}UK 勇気
+({＊勇気}+{戦い})UK 勇気+戦い
+({＊勇気}+{冒険})UK 勇気+冒険
+({＊勇気}+{騎乗})UK 勇気+騎乗
+{＊知恵}UK 知恵
+({＊知恵}+{狩り})UK 知恵+狩り
+({＊知恵}+{感覚})UK 知恵+感覚
+({＊知恵}+{学問})UK 知恵+学問
+{＊愛情}UK 愛情
+({＊愛情}+{歌})UK 愛情+歌
+({＊愛情}+{心話})UK 愛情+心話
+{希望}UK 希望
+{＊勇気}UK@{龍のダイス} 勇気 クリティカルコール!
+({＊勇気}+{戦い})UK@{龍のダイス} 勇気+戦い クリティカルコール!
+({＊勇気}+{冒険})UK@{龍のダイス} 勇気+冒険 クリティカルコール!
+({＊勇気}+{騎乗})UK@{龍のダイス} 勇気+騎乗 クリティカルコール!
+{＊知恵}UK@{龍のダイス} 知恵 クリティカルコール!
+({＊知恵}+{狩り})UK@{龍のダイス} 知恵+狩り クリティカルコール!
+({＊知恵}+{感覚})UK@{龍のダイス} 知恵+感覚 クリティカルコール!
+({＊知恵}+{学問})UK@{龍のダイス} 知恵+学問 クリティカルコール!
+{＊愛情}UK@{龍のダイス} 愛情 クリティカルコール!
+({＊愛情}+{歌})UK@{龍のダイス} 愛情+歌 クリティカルコール!
+({＊愛情}+{心話})UK@{龍のダイス} 愛情+心話 クリティカルコール!
+{希望}UK@{龍のダイス} 希望 クリティカルコール!
+`.trim();
+
+  // ========================
+  // 3. ステータス（希望 ＋ 友情）の構築
+  // ========================
+  // まずベースとなる「希望」をセット
+  let statusArray = [
+    { label: "希望", value: hp, max: hp }
+  ];
+
+  // 友情データを行から取得してステータス配列に追加
   document.querySelectorAll(".friendship-row").forEach(row => {
     const fName = row.querySelector(".friend-name").value;
     const fValue = Number(row.querySelector(".friend-value").value);
+    
     if (fName) {
-      const val = fValue >= 0 ? `+${fValue}` : `${fValue}`;
+      // ココフォリアに数値を渡す（仕様上、ステータスは数値型である必要があるため、そのまま数値を入れます）
       statusArray.push({
         label: fName,
-        value: val,
-        max: val //現在値と最大値を同じにして、ココフォリアのステータス機能を利用して友情の値を表示させる
+        value: fValue,
+        max: fValue
       });
     }
-      })
-  const ccfData = { name: name, test: "example", statuses: statusArray }; // 必要に応じて拡張してください
+  });
+
+  // ========================
+  // 4. ココフォリア用JSON構築
+  // ========================
+  const ccfData = {
+    kind: "character",
+    data: {
+      name: name,
+      initiative: 0,
+      externalUrl: "",
+      iconUrl: "",
+      commands: commands,
+      status: statusArray, // 希望と友情がここに入ります
+      params: [
+        { label: "龍のダイス", value: String(dragon) },
+
+        { label: "＊勇気", value: String(yuki) },
+        { label: "戦い", value: String(skills.tatakai) },
+        { label: "冒険", value: String(skills.bouken) },
+        { label: "騎乗", value: String(skills.kijou) },
+
+        { label: "＊知恵", value: String(chie) },
+        { label: "狩り", value: String(skills.kari) },
+        { label: "感覚", value: String(skills.kankaku) },
+        { label: "学問", value: String(skills.gakumon) },
+
+        { label: "＊愛情", value: String(aijo) },
+        { label: "歌", value: String(skills.uta) },
+        { label: "心話", value: String(skills.shinwa) }
+      ]
+    }
+  };
+
+  // テキストエリアに出力
   document.getElementById("ccfOutput").value = JSON.stringify(ccfData, null, 2);
 };
