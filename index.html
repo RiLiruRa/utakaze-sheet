@@ -169,6 +169,36 @@
             font-family: monospace;
             box-sizing: border-box;
         }
+
+        /* 技能グループ全体の枠組み */
+.skill-group {
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.5); /* 背景を少し明るく */
+    border: 1px solid #e0d7d2;
+}
+
+/* グループの見出し */
+.group-label {
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    padding-left: 5px;
+    border-left: 4px solid var(--leather-brown);
+}
+
+/* 各能力値の色（お好みで調整してください） */
+.yuki-color { color: #d32f2f; border-left-color: #d32f2f; } /* 赤系 */
+.chie-color { color: #1976d2; border-left-color: #1976d2; } /* 青系 */
+.aijo-color { color: #388e3c; border-left-color: #388e3c; } /* 緑系 */
+
+/* 1グループ内のレイアウト調整 */
+.skill-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2列にする */
+    gap: 8px 15px;
+}
     </style>
 </head>
 <body>
@@ -238,22 +268,34 @@
         </div>
 
         <!-- 技能 -->
-        <div class="section">
-            <div class="header" onclick="toggleSection(this)">技能 <span>▼</span></div>
-            <div class="content">
-                <div class="skill-list">
-                    <div class="skill-item"><span>戦い</span><input class="skill" id="tatakai" type="number" value="0"></div>
-                    <div class="skill-item"><span>冒険</span><input class="skill" id="bouken" type="number" value="0"></div>
-                    <div class="skill-item"><span>騎乗</span><input class="skill" id="kijou" type="number" value="0"></div>
-                    <div class="skill-item"><span>狩り</span><input class="skill" id="kari" type="number" value="0"></div>
-                    <div class="skill-item"><span>感覚</span><input class="skill" id="kankaku" type="number" value="0"></div>
-                    <div class="skill-item"><span>学問</span><input class="skill" id="gakumon" type="number" value="0"></div>
-                    <div class="skill-item"><span>歌</span><input class="skill" id="uta" type="number" value="0"></div>
-                    <div class="skill-item"><span>説得</span><input class="skill" id="settoku" type="number" value="0"></div>
-                    <div class="skill-item"><span>心話</span><input class="skill" id="shinwa" type="number" value="0"></div>
-                </div>
-            </div>
+<div class="content">
+    <div class="skill-group">
+        <div class="group-label yuki-color">勇気の技能</div>
+        <div class="skill-list">
+            <div class="skill-item"><span>戦い</span><input class="skill" id="tatakai" type="number" value="0"></div>
+            <div class="skill-item"><span>冒険</span><input class="skill" id="bouken" type="number" value="0"></div>
+            <div class="skill-item"><span>騎乗</span><input class="skill" id="kijou" type="number" value="0"></div>
         </div>
+    </div>
+
+    <div class="skill-group">
+        <div class="group-label chie-color">知恵の技能</div>
+        <div class="skill-list">
+            <div class="skill-item"><span>狩り</span><input class="skill" id="kari" type="number" value="0"></div>
+            <div class="skill-item"><span>感覚</span><input class="skill" id="kankaku" type="number" value="0"></div>
+            <div class="skill-item"><span>学問</span><input class="skill" id="gakumon" type="number" value="0"></div>
+        </div>
+    </div>
+
+    <div class="skill-group">
+        <div class="group-label aijo-color">愛情の技能</div>
+        <div class="skill-list">
+            <div class="skill-item"><span>歌</span><input class="skill" id="uta" type="number" value="0"></div>
+            <div class="skill-item"><span>説得</span><input class="skill" id="settoku" type="number" value="0"></div>
+            <div class="skill-item"><span>心話</span><input class="skill" id="shinwa" type="number" value="0"></div>
+        </div>
+    </div>
+</div>
 
         <!-- 持ち物 -->
         <div class="section">
