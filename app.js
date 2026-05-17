@@ -481,7 +481,8 @@ window.exportCCF = function () {
 
         { label: "＊愛情", value: String(aijo) },
         { label: "歌", value: String(skills.uta) },
-        { label: "心話", value: String(skills.shinwa) }
+        { label: "心話", value: String(skills.shinwa) },
+        { label: "説得", value: String(skills.settoku) }
       ]
     }
   };
