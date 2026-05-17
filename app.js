@@ -213,6 +213,13 @@ window.editCharacter = async function(id) {
         });
       }
 
+      const friendConntainer = document.getElementById("friendships");
+      friendConntainer.innerHTML = "";
+      if (data.friendships) {
+        data.friendships.forEach(f => {
+          window.addFriendship(f.name, f.value);
+        });}
+
       editingId = id;
       
       const statusEl = document.getElementById("editStatus");
@@ -254,6 +261,13 @@ window.saveCharacter = async function () {
   let items = [];
   document.querySelectorAll(".item").forEach(i => { if (i.value) items.push(i.value); });
 
+  let friendships = [];
+  document.querySelectorAll(".friendship-row").forEach(row => {
+    const fName = row.querySelector(".friend-name").value;
+    const fValue = Number(row.querySelector(".friend-value").value);
+    if (fName) friendships.push({ name: fName, value: fValue });
+  });
+
   let data = {
     name: nameInput,
     head: document.getElementById("head").value,
@@ -283,6 +297,13 @@ window.saveCharacter = async function () {
       shinwa:    document.getElementById("shinwa").value    === "" ? 0 : Number(document.getElementById("shinwa").value),
     },
     items: items,
+    friendships: Array.from(document.querySelectorAll(".friendship-row")).map(row => {
+      return {
+        name: row.querySelector(".friend-name").value,
+        value: Number(row.querySelector(".friend-value").value)
+        
+      };
+    }),
     userId: currentUser.uid, 
     updatedAt: new Date()    
   };
@@ -324,8 +345,38 @@ window.addItem = function (val = "") {
   container.appendChild(div);
 };
 
+window.addFriendship = function(name = "", value = 0) {
+  const container = document.getElementById("friendships");
+  const div = document.createElement("div");
+  div.className = "friendship-row";
+  div.style.display = "flex";
+  div.style.gap = "5px";
+  div.style.marginBottom = "5px";
+  div.innerHTML = `
+    <input placeholder="キャラクター名" class="friend-name" value="${name}" style="flex: 2;">
+    <input type="number" placeholder="値" class="friend-value" value="${value}" style="width: 70px;">
+    <button onclick="this.parentElement.remove()" style="background: #e57373; padding: 5px 10px; margin: 0; cursor:pointer;">×</button>
+  `;
+  container.appendChild(div);
+};
+
 window.exportCCF = function () {
-  const name = document.getElementById("name").value;
-  const ccfData = { name: name, test: "example" }; // 必要に応じて拡張してください
+  const name = document.getElementById("name").value || "ななしの勇者";
+
+  //友情データからココフォリアのstatus形式に変換
+  let statusArray = [];
+  document.querySelectorAll(".friendship-row").forEach(row => {
+    const fName = row.querySelector(".friend-name").value;
+    const fValue = Number(row.querySelector(".friend-value").value);
+    if (fName) {
+      const val = fValue >= 0 ? `+${fValue}` : `${fValue}`;
+      statusArray.push({
+        label: fName,
+        value: val,
+        max: val //現在値と最大値を同じにして、ココフォリアのステータス機能を利用して友情の値を表示させる
+      });
+    }
+      })
+  const ccfData = { name: name, test: "example", statuses: statusArray }; // 必要に応じて拡張してください
   document.getElementById("ccfOutput").value = JSON.stringify(ccfData, null, 2);
 };
