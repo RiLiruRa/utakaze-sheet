@@ -39,7 +39,17 @@ window.onload = () => {
   ["yuki","chie","aijo"].forEach(id => addOpts(id, 0, 6));
   addOpts("dragon", 1, 6);
 
-  // 2. DiscordのCallbackを解析する処理
+  //2.ブラウザに記憶されているDiscordユーザ情報があれば自動ログインさせる処理
+  const savedUser = localStorage.getItem("discordUser");
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+    document.getElementById("authBefore").style.display = "none";
+    document.getElementById("authAfter").style.display = "block";
+    document.getElementById("userInfo").innerText = `🍃 勇者: ${currentUser.displayName} としてログイン中`;
+    loadCharacters();　// ログイン状態を復元したらキャラクターを読み込む
+  }
+
+  // 3. DiscordのCallbackを解析する処理
   const fragments = new URLSearchParams(window.location.hash.substring(1));
   if (fragments.get("access_token")) {
     const accessToken = fragments.get("access_token");
@@ -51,6 +61,9 @@ window.onload = () => {
     .then(discordUser => {
       // テンプレートリテラルのバグ（' ）を修正
       currentUser = { uid: `discord_${discordUser.id}`, displayName: discordUser.username };
+
+      // 🍏 Discordユーザ情報をlocalStorageに保存して次回以降の自動ログインに備える
+      localStorage.setItem("discordUser", JSON.stringify(currentUser));
 
       document.getElementById("authBefore").style.display = "none";
       document.getElementById("authAfter").style.display = "block";
@@ -97,6 +110,10 @@ window.logout = async function() {
   } catch(e) {
     console.error("Firebaseログアウトエラー:", e);
   }
+
+  // 🍏 Discordログインユーザーのログアウト処理（localStorageから情報を消す）
+  localStorage.removeItem("discordUser");
+
   currentUser = null;
   document.getElementById("authBefore").style.display = "block";
   document.getElementById("authAfter").style.display = "none";
