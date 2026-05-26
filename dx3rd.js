@@ -7,20 +7,20 @@ import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from
 
 // ご自身のFirebase設定に書き換えてください
 const firebaseConfig = {
-  apiKey: "ｘｘｘｘｘｘｘｘ",
-  authDomain: "ｘｘｘｘｘｘｘｘ",
-  projectId: "ｘｘｘｘｘｘｘｘ",
-  storageBucket: "ｘｘｘｘｘｘｘｘ",
-  messagingSenderId: "ｘｘｘｘｘｘｘｘ",
-  appId: "ｘｘｘｘｘｘｘｘ",
-  measurementId: "ｘｘｘｘｘｘｘｘ"
+  apiKey: "AIzaSyCr0Aw3yX6INXqC15gyG52KtzbyA9sBk_o",
+  authDomain: "utakaze-sheet.firebaseapp.com",
+  projectId: "utakaze-sheet",
+  storageBucket: "utakaze-sheet.firebasestorage.app",
+  messagingSenderId: "708154707581",
+  appId: "1:708154707581:web:c5c8928d741ed1c3202b14",
+  measurementId: "G-QMQ4F1JT3C"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const ADMIN_UID = "ｘｘｘｘｘｘｘｘ"; 
+const ADMIN_UID = "TxjKeaW4e2T2S5kFPWaTrLOweXv2"; 
 let currentUser = null;
 let editingId = null;
 const targetCollection = "dx3rd_characters";
@@ -415,7 +415,7 @@ window.saveCharacter = async function () {
       category: row.querySelector(".effect-category").value,
       name: row.querySelector(".eff-name").value,
       lavel: Number(row.querySelector(".eff-lavel").value) || 1,
-    };
+    }
   }).filter(eff => eff.name !== ""));
 
   try {
