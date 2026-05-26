@@ -46,7 +46,7 @@ window.onload = () => {
     document.getElementById("authBefore").style.display = "none";
     document.getElementById("authAfter").style.display = "block";
     document.getElementById("userInfo").innerText = `🍃 勇者: ${currentUser.displayName} としてログイン中`;
-    loadCharacters();　// ログイン状態を復元したらキャラクターを読み込む
+    loadCharacters(); // ログイン状態を復元したらキャラクターを読み込む
   }
 
   // 3. DiscordのCallbackを解析する処理
@@ -437,18 +437,15 @@ window.exportCCF = function () {
   // ========================
   // 3. ステータス（希望 ＋ 友情）の構築
   // ========================
-  // まずベースとなる「希望」をセット
   let statusArray = [
     { label: "希望", value: hp, max: hp }
   ];
 
-  // 友情データを行から取得してステータス配列に追加
   document.querySelectorAll(".friendship-row").forEach(row => {
     const fName = row.querySelector(".friend-name").value;
     const fValue = Number(row.querySelector(".friend-value").value);
     
     if (fName) {
-      // ココフォリアに数値を渡す（仕様上、ステータスは数値型である必要があるため、そのまま数値を入れます）
       statusArray.push({
         label: fName,
         value: fValue,
@@ -468,7 +465,7 @@ window.exportCCF = function () {
       externalUrl: "",
       iconUrl: "",
       commands: commands,
-      status: statusArray, // 希望と友情がここに入ります
+      status: statusArray, 
       params: [
         { label: "龍のダイス", value: String(dragon) },
 
@@ -485,7 +482,7 @@ window.exportCCF = function () {
         { label: "＊愛情", value: String(aijo) },
         { label: "歌", value: String(skills.uta) },
         { label: "心話", value: String(skills.shinwa) },
-        { label: "説得", value: String(skills.settoku) }
+        { label: "説得", value: String(skills.settoku) } // 🍏 【修正】skills.settouku を skills.settoku に直しました
       ]
     }
   };
