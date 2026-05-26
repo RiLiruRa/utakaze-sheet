@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ダブルクロス Dx3rd キャラシート作成</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #1a1a1a;
+            --panel-bg: #262626;
+            --text-color: #e0e0e0;
+            --accent-red: #d32f2f;
+            --accent-blue: #1976d2;
+            --border-color: #404040;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-family: 'Zen Maru Gothic', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            border-bottom: 3px double var(--accent-red);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 0 black;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .status-badge {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #ff8a80;
+            background: #331a1a;
+            padding: 6px 15px;
+            border-radius: 20px;
+            border: 1px dashed var(--accent-red);
+            display: inline-block;
+        }
+
+        .section {
+            background: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            margin-bottom: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: #333333;
+            color: white;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header:hover { background: #444444; }
+
+        .content {
+            display: none;
+            padding: 20px;
+            background: var(--panel-bg);
+        }
+
+        .input-group { margin-bottom: 12px; }
+        .input-row { display: flex; gap: 10px; }
+        .input-row .input-group { flex: 1; }
+        
+        label { font-size: 0.9rem; font-weight: bold; display: block; margin-bottom: 4px; color: #b0b0b0; }
+        
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: inherit;
+            background: #1f1f1f;
+            color: white;
+        }
+
+        input[type="number"] { width: 100%; }
+
+        /* 技能セクション用スタイル */
+        .skill-group {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #1f1f1f;
+            border: 1px solid var(--border-color);
+        }
+        .skill-group-title {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            padding-left: 6px;
+            border-left: 4px solid var(--accent-red);
+        }
+        .skill-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .skill-name {
+            width: 70px;
+            font-size: 0.9rem;
+        }
+        .skill-input-flex {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+        }
+        .skill-num {
+            width: 70px !important;
+            text-align: center;
+        }
+
+        .btn-area { margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        
+        button {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #7f1d1d;
+            font-family: inherit;
+            transition: all 0.1s;
+        }
+
+        button:active { transform: translateY(3px); box-shadow: none; }
+        
+        .guild-board {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 40px;
+            border-top: 2px dashed var(--border-color);
+            padding-top: 20px;
+        }
+
+        .guild-board h2 {
+            text-align: center;
+            font-size: 1.4rem;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        #characterList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .card {
+            background: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card h3 { margin: 0 0 10px 0; font-size: 1.2rem; color: white; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<!-- 🔐 ログインエリア（ウタカゼ共通） -->
+<div id="loginArea" style="background: #262626; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); max-width: 600px; width: 100%; box-sizing: border-box;">
+    <div id="authBefore">
+        <p style="margin: 0 0 10px 0; font-weight: bold; text-align: center;">🎲 ギルドにログインしてオーヴァードの覚醒を記録しよう</p>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="loginWithDiscord()" style="background: #5865F2; box-shadow: 0 4px 0 #404eed;">📱 Discordでログイン</button>
+            <button onclick="document.getElementById('adminForm').style.display='block'" style="background: #444; font-size: 0.8rem; padding: 5px 12px; box-shadow: 0 4px 0 #222;">👑 管理者ログイン</button>
+        </div>
+        <div id="adminForm" style="display: none; margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+            <button onclick="loginAsAdmin()" style="width: 100%; padding: 8px;">管理者ログインを実行</button>
+        </div>
+    </div>
+    <div id="authAfter" style="display: none; text-align: center;">
+        <span id="userInfo" style="font-weight: bold;">超越者としてログイン中</span>
+        <button onclick="logout()" style="background: var(--accent-red); box-shadow: 0 3px 0 #7f1d1d; padding: 4px 12px; font-size: 0.8rem; margin-left: 10px;">ログアウト</button>
+    </div>
+</div>
+
+<!-- 🔄 システム切り替えリンク -->
+<div style="text-align: center; margin-bottom: 20px;">
+    <button onclick="location.href='index.html'" style="background: #5d4037; box-shadow: 0 4px 0 #3e2723;">🍃 ウタカゼ 勇者の記録帳へ戻る</button>
+</div>
+
+<h1>🧬 ダブルクロス Dx3rd 覚醒の記録</h1>
+<div class="status-badge" id="editStatus">🧬 今は【新規作成モード】だよ</div>
+
+<div class="container">
+    <!-- 基本情報 -->
+    <div class="section">
+        <div class="header" onclick="toggleSection(this)">基本情報 <span>▼</span></div>
+        <div class="content">
+            <div class="input-group"><label>キャラクター名</label><input id="name" placeholder="名前またはコードネーム"></div>
+            <div class="input-group"><label>コードネーム</label><input id="codename" placeholder="コードネーム"></div>
+            <div class="input-row">
+                <div class="input-group"><label>年齢</label><input id="age" type="number" placeholder="年齢"></div>
+                <div class="input-group"><label>性別</label><input id="gender" placeholder="性別"></div>
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>星座</label><input id="constellation" placeholder="星座"></div>
+                <div class="input-group"><label>血液型</label><input id="bloodtype" placeholder="血液型"></div>
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>身長</label><input id="height" placeholder="身長"></div>
+                <div class="input-group"><label>体重</label><input id="weight" placeholder="体重"></div>
+            </div>
+            <div class="input-group"><label>ワークス</label><select id="works"></select></div>
+            <div class="input-group"><label>カヴァー</label><select id="cover"></select></div>
+            <!-- 🧬 ライフパスセクション -->
+<div class="character-box">
+  <h3>🧬 ライフパス</h3>
+  <div class="grid-3">
+    <div>
+      <label>出自</label>
+      <select id="lifepath_shutsuji"><option value="">選択してください</option></select>
+    </div>
+    <div>
+      <label>経験（表の種類）</label>
+      <select id="lifepath_keiken_type">
+        <option value="">選択してください</option>
+        <option value="学生用">学生用</option>
+        <option value="一般社会用">一般社会用</option>
+        <option value="裏社会用">裏社会用</option>
+        <option value="UGN用">UGN用</option>
+      </select>
+    </div>
+    <div>
+      <label>具体的な経験</label>
+      <!-- 💡 表を選ぶと、ここの選択肢が自動で切り替わります -->
+      <select id="lifepath_keiken_select">
+        <option value="">表を選択してください</option>
+      </select>
+    </div>
+    <div>
+      <label>経験の内容（直接編集可）</label>
+      <input type="text" id="lifepath_keiken_txt" placeholder="上の表を選ぶか、直接入力も可">
+    </div>
+  
+  <div class="grid-3" style="margin-top: 10px;">
+    <div>
+      <label>邂逅（関係性）</label>
+      <select id="lifepath_kaikou"><option value="">選択してください</option></select>
+    </div>
+    <div>
+      <label>邂逅の相手枠（任意入力）</label>
+      <input type="text" id="lifepath_kaikou_txt" placeholder="相手の名前など">
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 10px;">
+    <div>
+      <label>覚醒</label>
+      <select id="lifepath_kakusei"><option value="">選択してください</option></select>
+    </div>
+    <div>
+      <label>衝動</label>
+      <select id="lifepath_shoudou"><option value="">選択してください</option></select>
+    </div>
+  </div>
+</div>
+
+<!-- 📊 侵蝕率管理セクション -->
+<div class="character-box">
+  <h3>📊 侵蝕率ステータス</h3>
+  <div class="grid-4">
+    <div>
+      <label>覚醒の侵蝕値</label>
+      <input type="number" id="val_kakusei" value="0" readonly style="background-color: #eee;">
+    </div>
+    <div>
+      <label>衝動の侵蝕値</label>
+      <input type="number" id="val_shoudou" value="0" readonly style="background-color: #eee;">
+    </div>
+    <div>
+      <label>その他修正（エフェクト等用）</label>
+      <!-- 将来的にエフェクトや装備で増える数値をここに入力、またはJSから加算させます -->
+      <input type="number" id="val_encroach_bonus" value="0">
+    </div>
+    <div>
+      <label style="font-weight: bold; color: #ff4757;">侵蝕率基本値</label>
+      <input type="number" id="val_encroach_base" value="0" readonly style="font-weight: bold; background-color: #ffeaa7; color: #d63031;">
+    </div>
+  </div>
+</div>
+
+<!-- ⚔️ 戦闘・副能力値セクション -->
+<div class="character-box">
+  <h3>⚔️ 戦闘・副能力値</h3>
+  <div class="grid-3">
+    <div>
+      <label>最大HP</label>
+      <input type="number" id="val_max_hp" value="0" readonly style="background-color: #eee; font-weight: bold;">
+    </div>
+    <div>
+      <label>常備化ポイント</label>
+      <input type="number" id="val_joubika" value="0" readonly style="background-color: #eee;">
+    </div>
+    <div>
+      <label>財産ポイント</label>
+      <!-- 将来的にアイテム購入コストを引き算できるように初期値は0、手動入力も可能にしています -->
+      <input type="number" id="val_zaisan" value="0">
+    </div>
+  </div>
+
+  <div class="grid-4" style="margin-top: 10px;">
+    <div>
+      <label>行動値</label>
+      <input type="number" id="val_kodochi" value="0" readonly style="background-color: #ffeaa7; font-weight: bold; color: #d63031;">
+    </div>
+    <div>
+      <label>行動値修正（アイテム・エフェクト等）</label>
+      <!-- アイテムによるマイナス修正や、エフェクトによるプラス修正をここに入力します -->
+      <input type="number" id="val_kodochi_bonus" value="0">
+    </div>
+    <div>
+      <label>戦闘移動</label>
+      <input type="number" id="val_sentou_idou" value="0" readonly style="background-color: #eee;">
+    </div>
+    <div>
+      <label>全力移動</label>
+      <input type="number" id="val_zenryoku_idou" value="0" readonly style="background-color: #eee;">
+    </div>
+  </div>
+</div>
+        </div>
+    </div>
+
+    <!-- ブラッド＆シンドローム -->
+    <div class="section">
+        <div class="header" onclick="toggleSection(this)">シンドローム <span>▼</span></div>
+        <div class="content">
+            <div class="input-group">
+                <label>ブリード</label>
+                <select id="breed">
+                    <option value="ピュアブリード">ピュアブリード</option>
+                    <option value="クロスブリード" selected>クロスブリード</option>
+                    <option value="トライブリード">トライブリード</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>シンドローム 1</label>
+                <select id="syndrome1" class="syndrome-select"></select>
+            </div>
+            <div class="input-group" id="syndrome2-area">
+                <label>シンドローム 2</label>
+                <select id="syndrome2" class="syndrome-select"></select>
+            </div>
+            <div class="input-group" id="syndrome3-area" style="display: none;">
+                <label>シンドローム 3</label>
+                <select id="syndrome3" class="syndrome-select"></select>
+            </div>
+        </div>
+    </div>
+
+    <!-- 能力値 -->
+    <div class="section">
+        <div class="header" onclick="toggleSection(this)">能力値 <span>▼</span></div>
+        <div class="content">
+            <p style="font-size: 0.8rem; color: #aaa; margin: 0 0 10px 0;">※ブリード・シンドローム・カヴァーを変更すると初期値が自動計算されます。</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group"><label>💪 肉体</label><input id="stat_nikutai" type="number" value="0"></div>
+                <div class="input-group"><label>🎯 感覚</label><input id="stat_kankaku" type="number" value="0"></div>
+                <div class="input-group"><label>🧠 精神</label><input id="stat_seishin" type="number" value="0"></div>
+                <div class="input-group"><label>🤝 社会</label><input id="stat_shakai" type="number" value="0"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 技能値 -->
+    <div class="section">
+        <div class="header" onclick="toggleSection(this)">技能値 <span>▼</span></div>
+        <div class="content">
+            <!-- 肉体の技能 -->
+            <div class="skill-group">
+                <div class="skill-group-title">💪 肉体の技能</div>
+                <div class="skill-row">
+                    <span class="skill-name">白兵</span>
+                    <input id="sk_hakuhai" class="skill-num" type="number" value="0">
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">回避</span>
+                    <input id="sk_kaihi" class="skill-num" type="number" value="0">
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">運転：</span>
+                    <div class="skill-input-flex">
+                        <input id="sk_unten1_txt" type="text" placeholder="四輪など">
+                        <input id="sk_unten1" class="skill-num" type="number" value="0">
+                    </div>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">運転：</span>
+                    <div class="skill-input-flex">
+                        <input id="sk_unten2_txt" type="text" placeholder="二輪など">
+                        <input id="sk_unten2" class="skill-num" type="number" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 感覚の技能 -->
+            <div class="skill-group">
+                <div class="skill-group-title">🎯 感覚の技能</div>
+                <div class="skill-row">
+                    <span class="skill-name">射撃</span>
+                    <input id="sk_shageki" class="skill-num" type="number" value="0">
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">知覚</span>
+                    <input id="sk_chikaku" class="skill-num" type="number" value="0">
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">芸術：</span>
+                    <div class="skill-input-flex">
+                        <input id="sk_geijutsu1_txt" type="text" placeholder="歌など">
+                        <input id="sk_geijutsu1" class="skill-num" type="number" value="0">
+                    </div>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">芸術：</span>
+                    <div class="skill-input-flex">
+                        <input id="sk_geijutsu2_txt" type="text" placeholder="絵画など">
+                        <input id="sk_geijutsu2" class="skill-num" type="number" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 精神の技能 -->
+            <div class="skill-group">
+                <div class="skill-group-title">🧠 精神の技能</div>
+                <div class="skill-row">
+                    <span class="skill-name">RC</span>
+                    <input id="sk_rc" class="skill-num" type="number" value="0">
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">意志</span>
+                    <input id="sk_ishi" class="skill-num" type="number" value="0">
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">知識：</span>
+                    <div class="skill-input-flex">
+                        <input id="sk_chishiki1_txt" type="text" placeholder="分野">
+                        <input id="sk_chishiki1" class="skill-num" type="number" value="0">
+                    </div>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">知識：</span>
+                    <div class="skill-input-flex">
+                        <input id="sk_chishiki2_txt" type="text" placeholder="分野">
+                        <input id="sk_chishiki2" class="skill-num" type="number" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 社会の技能 -->
+            <div class="skill-group">
+                <div class="skill-group-title">🤝 社会の技能</div>
+                <div class="skill-row">
+                    <span class="skill-name">交渉</span>
+                    <input id="sk_koushou" class="skill-num" type="number" value="0">
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">調達</span>
+                    <input id="sk_choutatsu" class="skill-num" type="number" value="0">
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">情報：</span>
+                    <div class="skill-input-flex">
+                        <input id="sk_jouhou1_txt" type="text" placeholder="噂話など">
+                        <input id="sk_jouhou1" class="skill-num" type="number" value="0">
+                    </div>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-name">情報：</span>
+                    <div class="skill-input-flex">
+                        <input id="sk_jouhou2_txt" type="text" placeholder="裏社会など">
+                        <input id="sk_jouhou2" class="skill-num" type="number" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ＝ ＝ ＝ エフェクト管理セクション ＝ ＝ ＝ -->
+<div class="section-box" style="margin-top: 20px; padding: 15px; border: 1px solid #ccc; background: #fdfdfd;">
+  <h2 style="margin-top: 0; border-bottom: 2px solid #555; padding-bottom: 5px;">🧬 取得エフェクト一覧</h2>
+  
+  <div id="effect_list_container">
+    <!-- ここに動的にエフェクトの入力行が追加されます -->
+  </div>
+  
+  <button type="button" onclick="addEffectRow()" style="margin-top: 10px; padding: 8px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+    ➕ エフェクトを追加
+  </button>
+</div>
+
+    <!-- 操作ボタンエリア -->
+    <div class="btn-area">
+        <button onclick="saveCharacter()">✨ ギルドに保存</button>
+    </div>
+</div>
+
+<!-- キャラクター一覧 -->
+<div class="guild-board">
+    <h2>📜 登録されたオーヴァードたちの一覧</h2>
+    <div id="characterList"></div>
+</div>
+
+<script type="module" src="dx3rd.js"></script>
+<script>
+    function toggleSection(header) {
+        const content = header.nextElementSibling;
+        const isOpen = content.style.display === "block";
+        content.style.display = isOpen ? "none" : "block";
+        header.querySelector('span').innerText = isOpen ? "▼" : "▲";
+    }
+</script>
+</body>
+</html>
