@@ -399,6 +399,7 @@ window.exportCCF = function () {
     gakumon: document.getElementById("gakumon").value === "" ? 0 : Number(document.getElementById("gakumon").value),
     uta:     document.getElementById("uta").value === "" ? 0 : Number(document.getElementById("uta").value),
     shinwa:  document.getElementById("shinwa").value === "" ? 0 : Number(document.getElementById("shinwa").value),
+    settoku: document.getElementById("settoku").value === "" ? 0 : Number(document.getElementById("settoku").value),
   };
 
   // ========================
