@@ -76,7 +76,7 @@ window.onload = () => {
   }
 };
 
-// --- 🌐 HTMLから呼び出す関数（windowオブジェクトに紐付け） ---
+// ---  HTMLから呼び出す関数（windowオブジェクトに紐付け） ---
 
 // Discordログインボタンを押したとき
 window.loginWithDiscord = function() {
@@ -482,7 +482,7 @@ window.exportCCF = function () {
         { label: "＊愛情", value: String(aijo) },
         { label: "歌", value: String(skills.uta) },
         { label: "心話", value: String(skills.shinwa) },
-        { label: "説得", value: String(skills.settoku) } // 🍏 【修正】skills.settouku を skills.settoku に直しました
+        { label: "説得", value: String(skills.settoku) } // ここまでが能力値とスキル
       ]
     }
   };
